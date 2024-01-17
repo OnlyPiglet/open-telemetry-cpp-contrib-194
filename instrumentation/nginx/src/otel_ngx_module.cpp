@@ -1121,7 +1121,7 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   auto provider =
     nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
       std::move(processor),
-      opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}),
+      opentelemetry::sdk::resource::Resource::Create({{"service.namespace", "kube-system"}}),
       std::move(sampler)));
 
   opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
