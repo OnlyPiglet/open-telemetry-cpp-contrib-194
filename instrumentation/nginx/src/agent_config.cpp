@@ -98,7 +98,7 @@ static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* con
   const char *otel_service_name_env = "OTEL_SERVICE_NAME";
   auto service_name_from_env = std::getenv(otel_service_name_env);
 
-  const char *otel_service_name_space_env = "OTEL_SERVICE_NAME_SPACE";
+  const char *otel_service_name_space_env = "OTEL_SERVICE_NAMESPACE";
   auto service_name_space_from_env = std::getenv(otel_service_name_space_env);
 
 
@@ -121,10 +121,9 @@ static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* con
 
     if (serviceNameSpace.ok) {
       config->service.nameSpace = FromStringDatum(serviceNameSpace);
-      return true;
     }
 
-    return false;
+    return true;
   }
 
   if ( service_name_space_from_env ){
@@ -135,10 +134,21 @@ static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* con
 
     if (serviceName.ok) {
       config->service.name = FromStringDatum(serviceName);
-      return true;
     }
-    return false;
+    return true;
   }
+
+
+    if (serviceName.ok) {
+      config->service.name = FromStringDatum(serviceName);
+    }
+
+    toml_datum_t serviceName = toml_string_in(service, "namespace");
+
+    if (serviceName.ok) {
+      config->service.name = FromStringDatum(serviceName);
+    }
+
 
   return true;
 }
