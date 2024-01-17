@@ -31,7 +31,7 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
   if (!hostVal.ok) {
     ngx_log_error(NGX_LOG_ERR, log, 0, "Missing required host field for OTLP exporter");
     return false;
- }
+  }
 
   std::string host = FromStringDatum(hostVal);
 
@@ -93,23 +93,51 @@ static bool SetupExporter(toml_table_t* root, ngx_log_t* log, OtelNgxAgentConfig
   return true;
 }
 
+
 static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* config) {
   const char *otel_service_name_env = "OTEL_SERVICE_NAME";
   auto service_name_from_env = std::getenv(otel_service_name_env);
 
-  if (service_name_from_env) {
+  const char *otel_service_name_space_env = "OTEL_SERVICE_NAME_SPACE";
+  auto service_name_space_from_env = std::getenv(otel_service_name_space_env);
+
+
+  if (service_name_from_env && service_name_space_from_env ) {
     config->service.name = service_name_from_env;
+    config->service.nameSpace = service_name_space_from_env;
     return true;
   }
 
-  toml_table_t* service = toml_table_in(root, "service");
+ toml_table_t* service = toml_table_in(root, "service");
 
-  if (service) {
+  if (!service){
+    return false;
+  }
+
+  if (service_name_from_env ) {
+    config->service.name = service_name_from_env;
+
+    toml_datum_t serviceNameSpace = toml_string_in(service, "namespace");
+
+    if (serviceNameSpace.ok) {
+      config->service.nameSpace = FromStringDatum(serviceNameSpace);
+      return true;
+    }
+
+    return false;
+  }
+
+  if ( service_name_space_from_env ){
+
+    config->service.nameSpace = service_name_space_from_env;
+
     toml_datum_t serviceName = toml_string_in(service, "name");
 
     if (serviceName.ok) {
       config->service.name = FromStringDatum(serviceName);
+      return true;
     }
+    return false;
   }
 
   return true;
