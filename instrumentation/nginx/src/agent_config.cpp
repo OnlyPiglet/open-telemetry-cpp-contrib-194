@@ -138,12 +138,13 @@ static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* con
     return true;
   }
 
+    toml_datum_t serviceNameSpace = toml_string_in(service, "namespace");
 
-    if (serviceName.ok) {
-      config->service.name = FromStringDatum(serviceName);
+    if (serviceNameSpace.ok) {
+      config->service.nameSpace = FromStringDatum(serviceNameSpace);
     }
 
-    toml_datum_t serviceName = toml_string_in(service, "namespace");
+    toml_datum_t serviceName = toml_string_in(service, "name");
 
     if (serviceName.ok) {
       config->service.name = FromStringDatum(serviceName);
