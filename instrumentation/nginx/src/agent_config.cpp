@@ -31,7 +31,7 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
   if (!hostVal.ok) {
     ngx_log_error(NGX_LOG_ERR, log, 0, "Missing required host field for OTLP exporter");
     return false;
- a}
+ }
 
   std::string host = FromStringDatum(hostVal);
 
