@@ -1117,11 +1117,14 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   }
 
   auto processor = CreateProcessor(agentConf, std::move(exporter));
-  opentelemetry::sdk::resource::Resource::Create({{"service.namespace", "kube-system"}});
+  auto serviceNamespaceResource =  nostd::shared_ptr<opentelemetry::sdk::resource::Resource>(opentelemetry::sdk::resource::Resource::Create({{"service.namespace", agentConf->service.nameSpace}}));
+  auto serviceNameResource =  nostd::shared_ptr<opentelemetry::sdk::resource::Resource>(opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}));
+  auto mergedResource =  nostd::shared_ptr<opentelemetry::sdk::resource::Resource>(opentelemetry::sdk::resource::Resource::Merge(serviceNamespaceResource))
+  auto finalMergedResource = nostd::shared_ptr<opentelemetry::sdk::resource::Resource>(opentelemetry::sdk::resource::Resource::Merge(serviceNameResource))
   auto provider =
     nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
       std::move(processor),
-      opentelemetry::sdk::resource::Resource::Create({{"service.namespace", "kube-system"}}),
+      finalMergedResource,
       std::move(sampler)));
 
   opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
